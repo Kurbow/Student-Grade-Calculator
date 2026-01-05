@@ -1,0 +1,467 @@
+/*
+    Student Grade Calculator System (TEACHER POV)
+    --------------------------------
+    This program allows an administrator to manage student records,
+    enter grades, compute averages, and generate reports such as
+    pass/fail status and Dean’s Lister results.
+
+    The program demonstrates:
+    - Proper C++ program structure
+    - Use of variables and multiple data types
+    - Selection and repetition structures
+    - Predefined and user-defined functions
+    - Arrays, structures, vectors, and algorithms
+*/
+
+
+
+#include <iostream> 	// for input and output
+#include <iomanip>  	// For formatted output
+#include <string> 		// For string data type
+#include <vector>  		// For dynamic array (vector)
+#include <algorithm> 	// For sort and find_if
+#include <cctype> 		// For isdigit and toupper
+#include <cmath>		// For predefined math functions
+
+// Design line for Better Readability
+using namespace std;
+string design(70, '=');
+
+// list of subject for grading
+const string SUBJECTS[8] = {
+    "God's Saving Action in History, Our Story: From Abraham to Jesus",
+    "Introduction to Computing(LEC)",
+    "Introduction to Computing(LAB)",
+    "Computer Programming 1(LEC)",
+    "Computer Programming 1(LAB)",
+    "Mathematics in the Modern World",
+    "National Training Service Program",
+    "PATHFIT 1"
+};
+
+// Administrator for login Credentials
+const string ADMIN_USER = "Admin";
+const string ADMIN_PASS = "1234";
+
+// Structure that list and stores student information
+struct Student {
+    string name;
+    string id;
+    string section;
+    int age;
+    int grades[8];
+    double average;
+
+};
+
+// Vector that stores all student records
+vector<Student> students;
+
+
+/* ---------- FUNCTION DECLARATIONS ---------- */
+
+void addStudent(); 						// Adds a new student to the system
+void viewStudents();					// Displays all registered students
+void enterGradesByID();					// Allows grade entry using student ID
+void generateAllStudentsReport();		// Generates report for all students
+void generateDeansList();				// Displays Dean’s Lister students
+bool isValidGrade(int grade);			// Validates if grade input is numeric
+bool isPassed(const Student& s);		// Checks if student passed all subjects
+bool isDeansLister(const Student& s);	// Checks if student qualifies as Dean’s Lister
+
+
+/* ---------- FUNCTION DEFINITIONS ---------- */
+
+// Checks if the input string contains only digits
+bool isValidGrade(const string& input) {
+    for (char ch : input) {
+        if (!isdigit(ch)) return false;
+    }
+    return true;
+}
+
+// Checks if grade is between 0 and 100
+bool isValidGrade(int grade) {
+    return grade >= 0 && grade <= 100;
+}
+
+
+// Determines if a student passed all subjects
+bool isPassed(const Student& s) {
+    for (int i = 0; i < 8; i++) {
+        if (s.grades[i] < 75) return false;
+    }
+    return true;
+}
+
+// Determines if a student qualifies for Dean’s List
+bool isDeansLister(const Student& s) {
+    if (s.average < 88) return false;
+    for (int i = 0; i < 8; i++) {
+        if (s.grades[i] < 85) return false;
+    }
+    return true;
+}
+
+// Adds a new student with validated input
+void addStudent() {
+    Student s;
+    string inputID, inputName, inputSection;
+    int inputAge;
+
+    cout << design << endl;
+
+// Validate unique student ID
+    while (true) {
+        cout << "Enter Student ID: ";
+        cin >> inputID;
+
+        if (inputID.empty()) {
+            cout << "Student ID cannot be empty. Try again.\n";
+            continue;
+        }
+
+
+        bool duplicate = false;
+        for (const auto& student : students) {
+            if (student.id == inputID) {
+                duplicate = true;
+                break;
+            }
+        }
+
+        if (duplicate) {
+            cout << "Student ID already exists. Try another one.\n";
+        }
+        else {
+            break;
+        }
+    }
+
+    cin.ignore();
+
+ // Validate student name
+    while (true) {
+        cout << "Enter Student Name: ";
+        getline(cin, inputName);
+
+        if (inputName.empty()) {
+            cout << "Student name cannot be empty. Try again.\n";
+        }
+        else {
+            break;
+        }
+    }
+
+ // Convert name to uppercase using predefined function
+for (char &c : inputName) {
+        c = toupper(c);
+    }
+
+// Validate section
+    while (true) {
+        cout << "Enter Section: ";
+        getline(cin, inputSection);
+
+        if (inputSection.empty()) {
+            cout << "Section cannot be empty. Try again.\n";
+        }
+        else {
+            break;
+        }
+    }
+// Validate age input
+    while (true) {
+        cout << "Enter Age: ";
+        cin >> inputAge;
+
+        if (cin.fail() || inputAge < 15 || inputAge > 100) {
+            cout << "Invalid age. Please enter a number between 15 and 100.\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
+        else {
+            break;
+        }
+    }
+
+    cout << design << endl;
+ // Assign validated data to student structure
+    s.id = inputID;
+    s.name = inputName;
+    s.section = inputSection;
+    s.age = inputAge;
+
+ // Initialize grades to -1
+    for (int i = 0; i < 8; i++) {
+        s.grades[i] = -1;
+    }
+
+    s.average = 0;
+    students.push_back(s);
+
+    cout << "Student added successfully!\n";
+    cout << design << endl;
+}
+
+
+// Displays all students in tabular format
+void viewStudents() {
+    if (students.empty()) {
+        cout << design << endl;
+        cout << "No students available.\n";
+        cout << design << endl;
+        return;
+    }
+
+    cout << design << endl;
+    cout << "=== STUDENT LIST ===\n";
+    cout << design << endl;
+
+    cout << left
+        << setw(5) << "No."
+        << setw(25) << "Name"
+        << setw(15) << "ID"
+        << setw(10) << "Age"
+        << setw(12) << "Section" << endl;
+
+    cout << string(70, '-') << endl;
+
+    for (size_t i = 0; i < students.size(); i++) {
+        const Student& s = students[i];
+        cout << left
+            << setw(5) << (i + 1)
+            << setw(25) << s.name
+            << setw(15) << s.id
+            << setw(10) << s.age
+            << setw(12) << s.section << endl;
+    }
+
+    cout << design << endl;
+}
+
+// Allows grade entry for a student and computes average
+void enterGradesByID() {
+    if (students.empty()) {
+        cout << design << endl;
+        cout << "No students available.\n";
+        cout << design << endl;
+        return;
+    }
+
+    string searchID;
+    cout << design << endl;
+    cout << "Enter Student ID to enter grades: ";
+    cin >> searchID;
+    cout << design << endl;
+
+    auto it = find_if(students.begin(), students.end(), [&](const Student& s) {
+        return s.id == searchID;
+        });
+
+    if (it == students.end()) {
+        cout << "Student ID not found.\n";
+        cout << design << endl;
+        return;
+    }
+
+ // Input grades for all subjects
+    for (int i = 0; i < 8; i++) {
+        string input;
+        int grade;
+
+        do {
+            cout << "Enter grade for " << SUBJECTS[i] << " (0-100): ";
+            cin >> input;
+
+            if (!isValidGrade(input)) {
+                cout << "Invalid input. Please enter a number between 0 and 100.\n";
+                continue;
+            }
+
+            grade = stoi(input);
+
+            if (!isValidGrade(grade)) {
+                cout << "Grade must be between 0 and 100.\n";
+            }
+
+        } while (!isValidGrade(input) || !isValidGrade(grade));
+
+        it->grades[i] = grade;
+    }
+
+    int total = 0;
+    for (int i = 0; i < 8; i++) {
+        total += it->grades[i];
+    }
+    // Compute average using predefined sqrt() function
+    double rawAverage = total / 8.0;
+it->average = sqrt(rawAverage * rawAverage); 
+
+    cout << design << endl;
+    cout << "Grades entered successfully for " << it->name << "!\n";
+    cout << "Average: " << fixed << setprecision(2) << it->average << endl;
+    cout << design << endl;
+}
+
+
+// Generates report for all students
+void generateAllStudentsReport() {
+    if (students.empty()) {
+        cout << design << endl;
+        cout << "No student data available.\n";
+        cout << design << endl;
+        return;
+    }
+
+    cout << design << endl;
+    cout << "=== ALL STUDENTS REPORT ===\n";
+    cout << left << setw(25) << "Name"
+        << setw(15) << "ID"
+        << setw(10) << "Average"
+        << setw(12) << "Status" << endl;
+    cout << string(70, '-') << endl;
+
+    for (const auto& s : students) {
+        if (s.grades[0] == -1) {
+            cout << left << setw(25) << s.name
+                << setw(15) << s.id
+                << setw(10) << "N/A"
+                << setw(12) << "No Grades" << endl;
+            continue;
+        }
+
+        string status = isPassed(s) ? "PASSED" : "FAILED";
+
+        cout << left << setw(25) << s.name
+            << setw(15) << s.id
+            << fixed << setprecision(2) << setw(10) << s.average
+            << setw(12) << status << endl;
+    }
+}
+
+// Generates Dean’s Lister report
+void generateDeansList() {
+    cout << design << endl;
+    cout << "\n=== DEAN'S LISTER REPORT ===\n";
+    bool found = false;
+
+    vector<Student> sortedStudents = students;
+
+
+    sort(sortedStudents.begin(), sortedStudents.end(), [](const Student& a, const Student& b) {
+        return a.average > b.average;
+        });
+
+    for (const auto& s : sortedStudents) {
+        if (isDeansLister(s)) {
+            cout << s.name << " (ID: " << s.id << ") - Average: "
+                << fixed << setprecision(2) << s.average << endl;
+            found = true;
+        }
+    }
+
+    if (!found) {
+        cout << "No Dean's Lister found.\n";
+    }
+}
+
+// Displays grades of a student by ID
+void viewGradesByID() {
+    if (students.empty()) {
+        cout << design << endl << "No students available.\n" << design << endl;
+        return;
+    }
+    string searchID;
+    cout << design << endl;
+    cout << "Enter Student ID to view grades: ";
+    cin >> searchID;
+    cin.ignore(1000, '\n');
+    cout << design << endl;
+
+
+    auto it = find_if(students.begin(), students.end(), [&](const Student& s) {
+        return s.id == searchID;
+        });
+
+    if (it == students.end()) {
+        cout << "Student ID not found.\n" << design << endl;
+        return;
+    }
+
+    cout << "Grades for " << it->name << " (ID: " << it->id << "):\n";
+    cout << left << setw(35) << "Subject" << setw(8) << "Grade" << endl;
+    cout << string(45, '-') << endl;
+    for (int i = 0; i < 8; i++) {
+        if (it->grades[i] == -1)
+            cout << left << setw(35) << SUBJECTS[i] << setw(8) << "N/A" << endl;
+        else
+            cout << left << setw(35) << SUBJECTS[i] << setw(8) << it->grades[i] << endl;
+    }
+    cout << design << endl;
+}
+
+
+
+
+
+// Main function controlling program flow and menu
+int main() {
+    string username, password;
+    int attempts = 0;
+    const int maxAttempts = 3;
+    int choice;
+
+ // Login system with limited attempts
+    while (attempts < maxAttempts) {
+        cout << design << endl;
+        cout << "Enter Username: ";
+        getline(cin, username);
+        cout << "Enter Password: ";
+        getline(cin, password);
+        cout << design << endl;
+
+        if (username == ADMIN_USER && password == ADMIN_PASS) {
+            cout << "Login successful!\n";
+            cout << design << endl;
+
+            do {
+                cout << "\n==== STUDENT GRADE CALCULATOR ====\n";
+                cout << "1. Add New Student\n";
+                cout << "2. View Student List\n";
+                cout << "3. Enter Grades (by ID)\n";
+                cout << "4. Generate All Students Report\n";
+                cout << "5. Generate Dean's Lister Report\n";
+                cout << "6. View Grades\n";
+                cout << "0. Exit\n";
+                cout << "Enter your choice: ";
+                cin >> choice;
+                cin.ignore();
+
+                switch (choice) {
+                case 1: addStudent(); break;
+                case 2: viewStudents(); break;
+                case 3: enterGradesByID(); break;
+                case 4: generateAllStudentsReport(); break;
+                case 5: generateDeansList(); break;
+                case 6: viewGradesByID(); break;
+                case 0: cout << "Exiting program.\n"; break;
+                default: cout << "Invalid choice. Try again.\n";
+                }
+
+            } while (choice != 0);
+
+            break;
+        }
+        else {
+            attempts++;
+            cout << "Invalid credentials. Attempt " << attempts << " of " << maxAttempts << endl;
+        }
+    }
+
+    if (attempts == maxAttempts) {
+        cout << "Too many failed attempts. Try again later.\n";
+    }
+
+    return 0;
+}
